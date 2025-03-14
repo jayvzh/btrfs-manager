@@ -1,4 +1,4 @@
-BTRFS Manager
+## BTRFS Manager
 自用btrfs管理脚本，包含快照查看 创建 删除 回滚，以及btrfs日常维护。
 
 ==== BTRFS 管理工具 ====
@@ -10,9 +10,7 @@ BTRFS Manager
 
 使用：按需修改VOLUMES为自己的逻辑卷挂载路径。
 
----
-
-BTRFS Manager
+## BTRFS Manager
 A self-use btrfs management script, including snapshot viewing, creation, deletion, rollback, and daily btrfs maintenance.
 
 ==== BTRFS Management Tool ====
@@ -24,10 +22,7 @@ A self-use btrfs management script, including snapshot viewing, creation, deleti
 
 Use: Modify VOLUMES as needed to your own logical volume mount path.
 
-
----
-
-Btrfs Management Script Function Overview
+## Btrfs Management Script Function Overview
 ​1. Core Modules
 ​Disk Space Monitoring
 Displays storage usage details (total/used/free space, RAID modes) via btrfs filesystem usage.
