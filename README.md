@@ -10,7 +10,8 @@ BTRFS Manager
 
 使用：按需修改VOLUMES为自己的逻辑卷挂载路径。
 
-———————————————————————————————
+---
+
 BTRFS Manager
 A self-use btrfs management script, including snapshot viewing, creation, deletion, rollback, and daily btrfs maintenance.
 
@@ -24,7 +25,8 @@ A self-use btrfs management script, including snapshot viewing, creation, deleti
 Use: Modify VOLUMES as needed to your own logical volume mount path.
 
 
-———————————————————————————————
+---
+
 Btrfs Management Script Function Overview
 ​1. Core Modules
 ​Disk Space Monitoring
