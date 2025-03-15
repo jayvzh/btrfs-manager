@@ -10,11 +10,14 @@
             - 创建快照
             - 删除快照
             - 回滚快照
+      - 管理限额
   - 维护与优化
     - ​**维护与优化**
       - 完整性检查与修复
       - 数据平衡
       - 查看上次完整性检查结果
+      - 碎片整理
+      - Trim优化
   - 监控设备健康状态
   - 显示文件系统基本信息
   - 退出
@@ -31,11 +34,14 @@
             - Create a snapshot
             - Delete a snapshot
             - Roll back to a snapshot
+      - Manage quota
   - Maintenance and optimization
     - ​**Maintenance and optimization**
       - Integrity check and repair
       - Data balancing
       - View the result of the last integrity check
+      - Defragment
+      - Trim optimization
   - Monitor device health status
   - Display basic filesystem information
   - Exit
