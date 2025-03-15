@@ -2,7 +2,7 @@
 
 # 定义逻辑盘
 LOG_FILE="/opt/snap/btrfs_manager.log"
-VOLUMES=(/vol1 /vol2 /vol3)
+VOLUMES=($(findmnt -t btrfs -o TARGET --noheadings))
 
 log_action() {
     echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
@@ -27,11 +27,13 @@ list_subvolumes_and_snapshots() {
     done
 
     echo "1) 管理快照"
+    echo "2) 管理子卷配额"
     echo "[回车] 返回主菜单"
     read -p "选择: " choice
 
     case "$choice" in
         1) manage_snapshots;;
+        2) manage_subvolume_quota;;
         "") return;;
         *) echo "无效输入";;
     esac
@@ -120,11 +122,41 @@ rollback_snapshot() {
     done
 }
 
+# 管理子卷配额
+manage_subvolume_quota() {
+    echo "=== 当前子卷配额 ==="
+    for vol in "${VOLUMES[@]}"; do
+        btrfs qgroup show "$vol"
+        echo
+    done
+
+    echo "[回车] 返回上级"
+    read -p "请输入要设置配额的子卷序号: " choice
+
+    if [[ -z "$choice" ]]; then
+        return  # 返回上级
+    fi
+
+    local subvol=$(btrfs subvolume list -o "$vol" | awk "NR==$choice {print \$NF}")
+
+    if [[ -n "$subvol" ]]; then
+        read -p "请输入新配额大小（例如 10G，留空取消）: " quota
+        if [[ -n "$quota" ]]; then
+            sudo btrfs qgroup limit "$quota" "$vol/$subvol"
+            echo "已设置配额: $subvol -> $quota"
+        fi
+    else
+        echo "无效输入"
+    fi
+}
+
 # 维护与优化
 maintain_and_optimize() {
     echo "1) 完整性检查与修复"
     echo "2) 数据平衡"
     echo "3) 查看上次完整性检查结果"
+    echo "4) 碎片整理"
+    echo "5) Trim优化"
     echo "[回车] 返回主菜单"
     read -p "选择: " choice
 
@@ -132,6 +164,8 @@ maintain_and_optimize() {
         1) scrub_data;;
         2) balance_data;;
         3) show_last_scrub_status;;
+        4) defragment_volume;;
+        5) trim_ssd;;
         "") return;;
         *) echo "无效输入";;
     esac
@@ -176,6 +210,56 @@ show_last_scrub_status() {
         log_action "查询 scrub 状态: $vol"
         echo
     done
+}
+
+# 碎片整理
+defragment_volume() {
+    echo "=== 选择要整理的逻辑盘 ==="
+    select vol in "${VOLUMES[@]}" "返回"; do
+        [[ "$vol" == "返回" ]] && return
+        if [[ -n "$vol" ]]; then
+            echo "1) 整理 $vol"
+            echo "2) 整理 $vol 并启用压缩"
+            read -p "选择: " choice
+            case "$choice" in
+                1) sudo btrfs filesystem defragment -r "$vol"; echo "已整理: $vol";;
+                2) sudo btrfs filesystem defragment -r -c zstd "$vol"; echo "已整理并启用压缩: $vol";;
+                "") return;;
+                *) echo "无效输入";;
+            esac
+        fi
+    done
+}
+
+# Trim优化（仅限 SSD）
+trim_ssd() {
+    echo "=== 选择 SSD 进行 Trim 优化 ==="
+
+    # 仅筛选 SSD 设备（ROTA=0），排除根目录和/boot/efi
+    echo
+    echo "可用的 SSD 设备及其挂载点："
+    echo "----------------------------------------"
+    lsblk -o NAME,TYPE,MOUNTPOINT,FSTYPE,SIZE,ROTA -r | awk '$6 == 0 && $3 != "/" && $3 != "/boot/efi"' | column -t
+    echo "----------------------------------------"
+
+    echo "[回车] 返回"
+    read -p "请输入要进行 Trim 优化的挂载点: " mount_point
+
+    # 如果用户直接回车，则返回
+    if [[ -z "$mount_point" ]]; then
+        return
+    fi
+
+    # 确保输入的挂载点有效
+    if mount | grep -q "on $mount_point "; then
+        echo "正在优化 Trim: $mount_point"
+        sudo fstrim -v "$mount_point"
+        echo "已优化 Trim: $mount_point"
+    else
+        echo "❌ 错误: $mount_point 不是有效的挂载点"
+    fi
+
+    read -p "按回车返回..."
 }
 
 # 监控设备健康状态
