@@ -207,14 +207,12 @@ while true; do
     read -p "请输入选项: " choice
 
     case "$choice" in
-        1) show_disk_usage;;
-        2) list_subvolumes_and_snapshots;;
-        3) maintain_and_optimize;;
-        4) monitor_health;;
-        5) show_fs_info;;
+        1) show_disk_usage; read -p "按回车继续..." ;;
+        2) list_subvolumes_and_snapshots ;;  # 直接返回，不等待
+        3) maintain_and_optimize ;;          # 直接返回，不等待
+        4) monitor_health; read -p "按回车继续..." ;;
+        5) show_fs_info; read -p "按回车继续..." ;;
         0) exit;;
-        *) echo "无效输入";;
+        *) echo "无效输入"; read -p "按回车继续..." ;;
     esac
-
-    read -p "按回车继续..."
 done
